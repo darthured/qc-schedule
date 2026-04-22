@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSN Projects — QC Schedule</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #1e293b;
+      color: #fff;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .header-left .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .generated-tag {
+      font-size: 11px;
+      color: #64748b;
+      background: #0f172a;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #475569;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-changed {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      background: #fef08a;
+      border: 1px solid #ca8a04;
+      flex-shrink: 0;
+    }
+
+    /* ── Filters ── */
+    .filters {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; }
+    .filter-btn {
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 500;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: #94a3b8; color: #1e293b; }
+    .filter-btn.active {
+      background: #1e293b;
+      border-color: #1e293b;
+      color: #fff;
+    }
+
+    /* ── Main content ── */
+    .content { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── Time band ── */
+    .time-band { margin-bottom: 32px; }
+    .band-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .band-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+    .band-count {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .band-line {
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* Band colours */
+    .band-completed .band-title  { background: #64748b; }
+    .band-today     .band-title  { background: #0f172a; }
+    .band-thisweek  .band-title  { background: #1d4ed8; }
+    .band-nextweek  .band-title  { background: #0369a1; }
+    .band-30days    .band-title  { background: #0f766e; }
+    .band-beyond    .band-title  { background: #6d28d9; }
+    .band-tba       .band-title  { background: #9ca3af; }
+
+    /* ── Job cards ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 12px;
+    }
+
+    .job-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      padding: 14px 16px;
+      position: relative;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .job-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+      transform: translateY(-1px);
+    }
+    .job-card.date-changed {
+      border-left: 3px solid #ca8a04;
+      background: linear-gradient(to right, #fffbeb 0%, #fff 60px);
+    }
+    .job-card.completed {
+      opacity: 0.6;
+      background: #f8fafc;
+    }
+    .job-card.tba {
+      border-style: dashed;
+      border-color: #cbd5e1;
+      background: #fafafa;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .job-id {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+    }
+    .card-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* Status badges */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .badge-confirmed  { background: #dcfce7; color: #166534; }
+    .badge-tbc        { background: #fef9c3; color: #854d0e; }
+    .badge-notnifty   { background: #ffedd5; color: #9a3412; }
+    .badge-completed  { background: #f1f5f9; color: #475569; }
+
+    /* Supplier pills */
+    .supplier-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .supplier-kejian      { background: #dbeafe; color: #1e40af; }
+    .supplier-brun        { background: #ede9fe; color: #5b21b6; }
+    .supplier-broad       { background: #fce7f3; color: #9d174d; }
+    .supplier-activejobs  { background: #ccfbf1; color: #0f766e; }
+    .supplier-other       { background: #f1f5f9; color: #475569; }
+
+    .job-name {
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .job-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .job-date.tba-date { color: #94a3b8; font-style: italic; font-weight: 400; }
+    .date-change-tag {
+      font-size: 10px;
+      background: #fef08a;
+      color: #92400e;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .job-notes {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.45;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+      font-style: italic;
+    }
+
+    /* ── Empty state ── */
+    .empty-band {
+      text-align: center;
+      padding: 18px;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* ── Summary bar ── */
+    .summary-bar {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+    .summary-item { display: flex; align-items: center; gap: 6px; color: #475569; }
+    .summary-num { font-weight: 700; font-size: 18px; color: #1e293b; }
+    .summary-changed { color: #92400e; }
+    .summary-num.changed { color: #ca8a04; }
+
+    @media (max-width: 600px) {
+      .content { padding: 16px; }
+      .header { padding: 14px 16px; }
+      .legend, .filters, .summary-bar { padding: 10px 16px; }
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>SSN Projects — QC Schedule</h1>
+    <div class="subtitle">Factory quality control inspections overview</div>
+  </div>
+  <div class="header-right">
+    <div class="generated-tag" id="generated-tag">Generated —</div>
+  </div>
+</div>
+
+<div class="summary-bar" id="summary-bar">
+  <!-- filled by JS -->
+</div>
+
+<div class="legend">
+  <span style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Legend</span>
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div> Confirmed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div> TBC</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div> Not in Nifty</div>
+  <div class="legend-item"><div class="legend-changed"></div> Date changed this week</div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">Filter</span>
+  <button class="filter-btn active" data-filter="all">All jobs</button>
+  <button class="filter-btn" data-filter="Kejian">Kejian</button>
+  <button class="filter-btn" data-filter="Brun Joinery">Brun Joinery</button>
+  <button class="filter-btn" data-filter="Broad">Broad</button>
+  <button class="filter-btn" data-filter="Other">Other</button>
+</div>
+
+<div class="content" id="content">
+  <!-- rendered by JS -->
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const GENERATED = "Wednesday, 22 April 2026";
+
+const jobs = [
+  {
+    "id": "QOJ-97/J",
+    "supplier": "Kejian",
+    "status": "Confirmed",
+    "name": "COSTRUCT ORIA YUEXING METAL L2-L11 SC02 Aluminium Louvre (10 sets) Part 2 & Roof SC04 Aluminium Screening (5 sets)",
+    "dateStr": "23 Apr 2026",
+    "dateISO": "2026-04-23",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Confirmed \u2014 covers L2-L11 (10 sets) and Roof SC04 Aluminium Screening (5 sets)."
+  },
+  {
+    "id": "QOJ-97/H",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - YUEXING METAL SC01, SC04 & SC05 Aluminium Screening + Gate + Doors (B2-GF & Roof)",
+    "dateStr": "5 May 2026",
+    "dateISO": "2026-05-05",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Scope: SC01 (12 sets), SC04 (11 sets), SC05 (3 sets), plus gate and doors from B2 to GF and Roof."
+  },
+  {
+    "id": "QOJ-282/B",
+    "supplier": "Other",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) GUANGZHOU YIZHEN - LIGHT FITTINGS (2nd Batch)",
+    "dateStr": "9 May 2026",
+    "dateISO": "2026-05-09",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Estimated date \u2014 delayed. Client requested better polishing on SL-01 cover."
+  },
+  {
+    "id": "QOJ-47/C",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "SUNBUILT (MQ2) - KEJIAN WINDOWS - L9-L10 AW/FW/SD",
+    "dateStr": "16 May 2026",
+    "dateISO": "2026-05-16",
+    "dateChanged": true,
+    "oldDate": "11 May 2026",
+    "notes": "Factory update (22 Apr): estimated completion mid-to-late May (approx. 15\u201320 May)."
+  },
+  {
+    "id": "QOJ-23/F",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "Siera Tapestry Broad Window GF & LF19 & ROOF & S/M QC",
+    "dateStr": "23 May 2026",
+    "dateISO": "2026-05-23",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Approximate date \u2014 to be confirmed closer to the time."
+  },
+  {
+    "id": "QOJ-87/RAW(2)",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - KEJIAN RAW MATERIALS - L16-L17",
+    "dateStr": "25 May 2026",
+    "dateISO": "2026-05-25",
+    "dateChanged": true,
+    "oldDate": "12 May 2026",
+    "notes": "Approximate date \u2014 Kejian has no production schedule yet (updated 22 Apr)."
+  },
+  {
+    "id": "QOJ-162/A",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "MQ2 - YUEXING METAL BALUSTRADES",
+    "dateStr": "29 May 2026",
+    "dateISO": "2026-05-29",
+    "dateChanged": true,
+    "oldDate": "8 May 2026",
+    "notes": "Approximate date \u2014 drawings still being confirmed (updated 22 Apr)."
+  },
+  {
+    "id": "QOJ-47/RAW",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "(L11-L14) - SUNBUILT (MQ2) - KEJIAN WINDOWS - Full Length Profiles",
+    "dateStr": "30 May 2026",
+    "dateISO": "2026-05-30",
+    "dateChanged": true,
+    "oldDate": "14 May 2026",
+    "notes": "Approximate date \u2014 no production schedule yet (updated 22 Apr)."
+  },
+  {
+    "id": "QOJ-87/N",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - KEJIAN WINDOWS - L16 (Penthouse) Windows/Doors",
+    "dateStr": "6 Jun 2026",
+    "dateISO": "2026-06-06",
+    "dateChanged": true,
+    "oldDate": "22 May 2026",
+    "notes": "Approximate date \u2014 to be confirmed once QOJ-87/RAW(2) schedule is set."
+  },
+  {
+    "id": "QOJ-87/P",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - KEJIAN WINDOWS - L17 (Penthouse) Windows/Doors",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-162/B",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "MQ2 - KEJIAN (BALUSTRADES - L8-L31 TBC)",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-87/Q",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - KEJIAN WINDOWS - Business Centre Glazing",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-87/R",
+    "supplier": "Kejian",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) - KEJIAN WINDOWS - Entry Glazing",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-18/G",
+    "supplier": "Brun Joinery",
+    "status": "Confirmed",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (L11)",
+    "dateStr": "25 Apr 2026",
+    "dateISO": "2026-04-25",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-18/H",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (L12)",
+    "dateStr": "8 May 2026",
+    "dateISO": "2026-05-08",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Date from Nifty (QC SCH 8.5.2026) \u2014 not yet added to calendar."
+  },
+  {
+    "id": "QOJ-18/J",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (L13)",
+    "dateStr": "25 May 2026",
+    "dateISO": "2026-05-25",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Date from Nifty (QC SCH 25.5.2026) \u2014 not yet added to calendar."
+  },
+  {
+    "id": "QOJ-18/K",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (L14 - Penthouses)",
+    "dateStr": "2 Jun 2026",
+    "dateISO": "2026-06-02",
+    "dateChanged": true,
+    "oldDate": "TBA",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-18/M",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (L15 - Penthouses)",
+    "dateStr": "9 Jun 2026",
+    "dateISO": "2026-06-09",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-169/B",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "SUNBUILT (MQ2) - BRUN JOINERY - L7-L8",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "QOJ-18/L",
+    "supplier": "Brun Joinery",
+    "status": "TBC",
+    "name": "COSTRUCT (ORIA) BRUN JOINERY (Common Areas)",
+    "dateStr": "TBA",
+    "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "SQ-289",
+    "supplier": "Active Jobs",
+    "status": "Not in Nifty",
+    "name": "GSNP COS VERDE KERBS - POD Sydney",
+    "dateStr": "29 Apr 2026",
+    "dateISO": "2026-04-29",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  }
+];
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const TODAY = new Date("2026-04-22");
+
+function startOfWeek(d) {
+  const day = new Date(d);
+  const dow = day.getDay(); // 0=Sun
+  day.setDate(day.getDate() - (dow === 0 ? 6 : dow - 1)); // Monday
+  day.setHours(0,0,0,0);
+  return day;
+}
+function endOfWeek(d) {
+  const s = startOfWeek(d);
+  s.setDate(s.getDate() + 6);
+  s.setHours(23,59,59,999);
+  return s;
+}
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+
+const thisWeekStart = startOfWeek(TODAY);
+const thisWeekEnd   = endOfWeek(TODAY);
+const nextWeekStart = addDays(thisWeekStart, 7);
+const nextWeekEnd   = addDays(thisWeekEnd, 7);
+const in30days      = addDays(TODAY, 30);
+
+function getBand(job) {
+  if (!job.dateISO) return "tba";
+  const d = new Date(job.dateISO);
+  d.setHours(12,0,0,0);
+  if (d < TODAY)               return "completed";
+  if (d >= TODAY && d <= thisWeekEnd)  return "thisweek";
+  if (d > thisWeekEnd && d <= nextWeekEnd) return "nextweek";
+  if (d > nextWeekEnd && d <= in30days)    return "30days";
+  return "beyond";
+}
+
+function supplierClass(s) {
+  if (s === "Kejian")      return "supplier-kejian";
+  if (s === "Brun Joinery") return "supplier-brun";
+  if (s === "Broad")       return "supplier-broad";
+  if (s === "Active Jobs") return "supplier-activejobs";
+  return "supplier-other";
+}
+function statusBadge(s) {
+  if (s === "Confirmed")   return '<span class="badge badge-confirmed">Confirmed</span>';
+  if (s === "TBC")         return '<span class="badge badge-tbc">TBC</span>';
+  if (s === "Not in Nifty") return '<span class="badge badge-notnifty">Not in Nifty</span>';
+  if (s === "Completed")   return '<span class="badge badge-completed">Completed</span>';
+  return '';
+}
+
+// ── Band config ───────────────────────────────────────────────────────────────
+const bands = [
+  { key: "completed", label: "Recently Completed", cls: "band-completed" },
+  { key: "thisweek",  label: "This Week  (22–26 Apr)", cls: "band-thisweek" },
+  { key: "nextweek",  label: "Next Week  (27 Apr – 3 May)", cls: "band-nextweek" },
+  { key: "30days",    label: "Within 30 Days  (4–22 May)", cls: "band-30days" },
+  { key: "beyond",    label: "Further Out  (23 May+)", cls: "band-beyond" },
+  { key: "tba",       label: "TBA — Date Not Yet Set", cls: "band-tba" },
+];
+
+// ── Render ────────────────────────────────────────────────────────────────────
+document.getElementById("generated-tag").textContent = "Generated " + GENERATED;
+
+let currentFilter = "all";
+
+function renderCard(job) {
+  const changed = job.dateChanged;
+  const isTBA   = job.dateStr === "TBA";
+  const isComp  = job.status === "Completed";
+  let cls = "job-card";
+  if (changed) cls += " date-changed";
+  if (isComp)  cls += " completed";
+  if (isTBA)   cls += " tba";
+
+  const dateTag = changed
+    ? `<span class="date-change-tag">▲ was ${job.oldDate}</span>`
+    : "";
+
+  const notesHtml = job.notes
+    ? `<div class="job-notes">${job.notes}</div>` : "";
+
+  return `
+    <div class="${cls}" data-supplier="${job.supplier}">
+      <div class="card-top">
+        <div class="job-id">${job.id}</div>
+        <div class="card-badges">
+          ${statusBadge(job.status)}
+          <span class="supplier-pill ${supplierClass(job.supplier)}">${job.supplier}</span>
+        </div>
+      </div>
+      <div class="job-name">${job.name}</div>
+      <div class="card-footer">
+        <div class="job-date ${isTBA ? 'tba-date' : ''}">
+          📅 ${job.dateStr}
+        </div>
+        ${dateTag}
+      </div>
+      ${notesHtml}
+    </div>`;
+}
+
+function render() {
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+
+  const filtered = currentFilter === "all"
+    ? jobs
+    : jobs.filter(j => j.supplier === currentFilter);
+
+  let totalVisible = 0, totalChanged = 0;
+
+  bands.forEach(band => {
+    const bandJobs = filtered.filter(j => getBand(j) === band.key);
+    if (bandJobs.length === 0) return;
+
+    totalVisible += bandJobs.length;
+    totalChanged += bandJobs.filter(j => j.dateChanged).length;
+
+    const section = document.createElement("div");
+    section.className = `time-band ${band.cls}`;
+
+    const sortedJobs = [...bandJobs].sort((a, b) => {
+      if (!a.dateISO && !b.dateISO) return 0;
+      if (!a.dateISO) return 1;
+      if (!b.dateISO) return -1;
+      return a.dateISO.localeCompare(b.dateISO);
+    });
+
+    section.innerHTML = `
+      <div class="band-header">
+        <span class="band-title">${band.label}</span>
+        <span class="band-count">${bandJobs.length} job${bandJobs.length !== 1 ? 's' : ''}</span>
+        <div class="band-line"></div>
+      </div>
+      <div class="cards-grid">
+        ${sortedJobs.map(renderCard).join("")}
+      </div>`;
+    content.appendChild(section);
+  });
+
+  // Summary
+  const confirmed = filtered.filter(j => j.status === "Confirmed" && j.dateISO).length;
+  const tbc = filtered.filter(j => j.status === "TBC" && j.dateISO).length;
+  const tba = filtered.filter(j => !j.dateISO).length;
+  const changed = filtered.filter(j => j.dateChanged).length;
+
+  document.getElementById("summary-bar").innerHTML = `
+    <div class="summary-item">
+      <span class="summary-num">${totalVisible}</span>
+      <span>total jobs</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-num" style="color:#166534">${confirmed}</span>
+      <span>confirmed</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-num" style="color:#854d0e">${tbc}</span>
+      <span>TBC</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-num" style="color:#ca8a04">${changed}</span>
+      <span>date changes this week</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-num" style="color:#94a3b8">${tba}</span>
+      <span>TBA</span>
+    </div>`;
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────────
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
