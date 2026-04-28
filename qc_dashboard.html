@@ -349,19 +349,30 @@
 
 <script>
 // ── Data ──────────────────────────────────────────────────────────────────────
-const GENERATED = "Thursday, 23 April 2026";
+const GENERATED = "Tuesday, 28 April 2026";
 
 const jobs = [
   {
     "id": "QOJ-97/J",
     "supplier": "Kejian",
-    "status": "TBC",
-    "name": "COSTRUCT ORIA YUEXING METAL L2-L11 SC02 Aluminium Louvre (10 sets) Part 2 & Roof SC04 Aluminium Screening (5 sets)",
+    "status": "Confirmed",
+    "name": "COSTRUCT (ORIA) YUEXING METAL L2-L11 SC02 Aluminium Louvre (10 sets) Part 2 & Roof SC04 Aluminium Screening (5 sets)",
     "dateStr": "28 Apr 2026",
     "dateISO": "2026-04-28",
     "dateChanged": false,
     "oldDate": "",
-    "notes": "QC postponed to 28 Apr \u2014 factory identified powder coating issues requiring polishing and reapplication."
+    "notes": "Powder coating issues resolved; QC date confirmed 28 Apr."
+  },
+  {
+    "id": "QOJ-47/RAW",
+    "supplier": "Kejian",
+    "status": "Not in Nifty",
+    "name": "(L11-L16) - SUNBUILT (MQ2) - KEJIAN WINDOWS - Full Length Profiles (Non-Cutted)",
+    "dateStr": "4 May 2026",
+    "dateISO": "2026-05-04",
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": "Factory provided incorrect info on 27 Apr \u2014 only sub frames were ready. Full-length profiles rescheduled to approx. 4 May."
   },
   {
     "id": "QOJ-97/H",
@@ -372,7 +383,7 @@ const jobs = [
     "dateISO": "2026-05-05",
     "dateChanged": false,
     "oldDate": "",
-    "notes": "Scope: SC01 (12 sets), SC04 (11 sets), SC05 (3 sets), plus gate and doors from B2 to GF and Roof."
+    "notes": "Scope: SC01 (12 sets), SC04 (11 sets), SC05 (3 sets), plus gate and doors B2\u2013GF and Roof."
   },
   {
     "id": "QOJ-282/B",
@@ -383,12 +394,12 @@ const jobs = [
     "dateISO": "2026-05-09",
     "dateChanged": false,
     "oldDate": "",
-    "notes": "Delayed \u2014 client requested better polishing on SL-01 cover."
+    "notes": "Delayed \u2014 client requested improved polishing on SL-01 cover."
   },
   {
     "id": "CO",
     "supplier": "Kejian",
-    "status": "TBC",
+    "status": "Not in Nifty",
     "name": "STRUCT (Lakeside Serenity) - HSD Tapware",
     "dateStr": "10 May 2026",
     "dateISO": "2026-05-10",
@@ -405,7 +416,7 @@ const jobs = [
     "dateISO": "2026-05-16",
     "dateChanged": false,
     "oldDate": "",
-    "notes": "Factory update (22 Apr): estimated completion approx. 15\u201320 May \u2014 date to be confirmed."
+    "notes": "Factory update (22 Apr): estimated completion approx. 15\u201320 May."
   },
   {
     "id": "QOJ-23/F",
@@ -427,7 +438,7 @@ const jobs = [
     "dateISO": "2026-05-25",
     "dateChanged": false,
     "oldDate": "",
-    "notes": "Approximate date \u2014 Kejian has no confirmed production schedule yet."
+    "notes": "Approximate date \u2014 no confirmed factory schedule yet."
   },
   {
     "id": "QOJ-162/A",
@@ -439,17 +450,6 @@ const jobs = [
     "dateChanged": false,
     "oldDate": "",
     "notes": "Approximate date \u2014 drawings still being finalised."
-  },
-  {
-    "id": "QOJ-47/RAW",
-    "supplier": "Kejian",
-    "status": "TBC",
-    "name": "(L11-L14) - SUNBUILT (MQ2) - KEJIAN WINDOWS - Full Length Profiles",
-    "dateStr": "30 May 2026",
-    "dateISO": "2026-05-30",
-    "dateChanged": false,
-    "oldDate": "",
-    "notes": "Approximate date \u2014 no confirmed production schedule yet."
   },
   {
     "id": "QOJ-87/N",
@@ -507,25 +507,14 @@ const jobs = [
     "notes": ""
   },
   {
-    "id": "QOJ-18/G",
-    "supplier": "Brun Joinery",
-    "status": "Confirmed",
-    "name": "COSTRUCT (ORIA) BRUN JOINERY (L11)",
-    "dateStr": "25 Apr 2026",
-    "dateISO": "2026-04-25",
-    "dateChanged": false,
-    "oldDate": "",
-    "notes": ""
-  },
-  {
     "id": "QOJ-18/H",
     "supplier": "Brun Joinery",
     "status": "TBC",
     "name": "COSTRUCT (ORIA) BRUN JOINERY (L12)",
     "dateStr": "6 May 2026",
     "dateISO": "2026-05-06",
-    "dateChanged": true,
-    "oldDate": "8 May 2026",
+    "dateChanged": false,
+    "oldDate": "",
     "notes": ""
   },
   {
@@ -535,8 +524,8 @@ const jobs = [
     "name": "COSTRUCT (ORIA) BRUN JOINERY (L13)",
     "dateStr": "23 May 2026",
     "dateISO": "2026-05-23",
-    "dateChanged": true,
-    "oldDate": "25 May 2026",
+    "dateChanged": false,
+    "oldDate": "",
     "notes": ""
   },
   {
@@ -546,8 +535,8 @@ const jobs = [
     "name": "COSTRUCT (ORIA) BRUN JOINERY (L14 - Penthouses)",
     "dateStr": "30 May 2026",
     "dateISO": "2026-05-30",
-    "dateChanged": true,
-    "oldDate": "2 Jun 2026",
+    "dateChanged": false,
+    "oldDate": "",
     "notes": ""
   },
   {
@@ -557,8 +546,8 @@ const jobs = [
     "name": "COSTRUCT (ORIA) BRUN JOINERY (L15 - Penthouses)",
     "dateStr": "7 Jun 2026",
     "dateISO": "2026-06-07",
-    "dateChanged": true,
-    "oldDate": "9 Jun 2026",
+    "dateChanged": false,
+    "oldDate": "",
     "notes": ""
   },
   {
@@ -579,6 +568,17 @@ const jobs = [
     "name": "COSTRUCT (ORIA) BRUN JOINERY (Common Areas)",
     "dateStr": "TBA",
     "dateISO": null,
+    "dateChanged": false,
+    "oldDate": "",
+    "notes": ""
+  },
+  {
+    "id": "SO-331",
+    "supplier": "Active Jobs",
+    "status": "Not in Nifty",
+    "name": "(SQ-307) - 300+300 pcs 40mm Juperana Paver",
+    "dateStr": "28 Apr 2026",
+    "dateISO": "2026-04-28",
     "dateChanged": false,
     "oldDate": "",
     "notes": ""
